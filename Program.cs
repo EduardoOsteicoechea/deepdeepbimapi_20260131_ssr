@@ -44,28 +44,28 @@ app.MapPost("/create_user", async (
     IAmazonDynamoDB dynamoDBClient
 ) =>
 {
-    string[] requestErrors = Array.Empty<string>();
+    var requestErrors = new List<string>();
 
     if (string.IsNullOrEmpty(input.FirstName))
     {
-        requestErrors.Append("First Name");
+        requestErrors.Add("First Name");
     }
     if (string.IsNullOrEmpty(input.LastName))
     {
-        requestErrors.Append("Last Name");
+        requestErrors.Add("Last Name");
     }
     if (string.IsNullOrEmpty(input.Password))
     {
-        requestErrors.Append("Password");
+        requestErrors.Add("Password");
     }
     if (string.IsNullOrEmpty(input.Email))
     {
-        requestErrors.Append("Email");
+        requestErrors.Add("Email");
     }
 
-    if(requestErrors.Length > 0)
+    if(requestErrors.Any())
     {
-        return Results.BadRequest(new { error = $"Missing fields: {string.Join(", ",requestErrors)}" });
+        return Results.BadRequest(new { error = $"Missing fields: {string.Join(", ", requestErrors)}" });
     }
 
     var emailCheckRequest = new QueryRequest
