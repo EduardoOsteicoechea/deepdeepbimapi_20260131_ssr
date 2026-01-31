@@ -9,14 +9,15 @@ public static class Page
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>DeepDeepBim.com</title>
-            <link rel="stylesheet" href="global.css">
+            <link rel="stylesheet" href="static/global.css">
+            <script src="static/global.js"></script>
         </head>
         <body>
         <h1>DeepDeepBIM</h1>
         """u8;
 
     public static async Task Print(System.IO.Pipelines.PipeWriter writer)
-    {        
+    {
         writer.Write(Head);
         await writer.CompleteAsync();
     }
