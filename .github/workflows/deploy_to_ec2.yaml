@@ -28,7 +28,6 @@ jobs:
           source: "./publish/*"
           target: "/home/${{ secrets.USERNAME }}/app"
           strip_components: 1
-          debug: true
 
       - name: Stop and Restart Service via SSH
         uses: appleboy/ssh-action@master
