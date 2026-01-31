@@ -29,6 +29,7 @@ jobs:
           source: "./publish/*"
           target: "/home/${{ secrets.USERNAME }}/app"
           strip_components: 1
+          debug: true
 
       # 5. Stop process on 443 and Restart
       - name: Restart Service via SSH
