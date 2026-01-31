@@ -42,6 +42,23 @@ app.MapPost("/create_user", async (
     IAmazonDynamoDB dynamoDBClient
 ) =>
 {
+    if (string.IsNullOrEmpty(input.FirstName))
+    {
+        return Results.InternalServerError(new { error = "Empty First Name." });
+    }
+    if (string.IsNullOrEmpty(input.LastName))
+    {
+        return Results.InternalServerError(new { error = "Empty Last Name." });
+    }
+    if (string.IsNullOrEmpty(input.Password))
+    {
+        return Results.InternalServerError(new { error = "Empty Password." });
+    }
+    if (string.IsNullOrEmpty(input.Email))
+    {
+        return Results.InternalServerError(new { error = "Empty Email." });
+    }
+
     var emailCheckRequest = new QueryRequest
     {
         TableName = "deepdeepbim_users",
