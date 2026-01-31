@@ -1,5 +1,7 @@
-using System.Security. Cryptography.X509Certificates;
+using System.Security.Cryptography.X509Certificates;
 using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
+
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -10,7 +12,7 @@ var keyPath = "/etc/letsencrypt/live/deepdeepbim.com/privkey.pem";
 
 builder.WebHost.ConfigureKestrel(options =>
 {
-    options.ListenAnyIP(80); 
+    options.ListenAnyIP(80);
 
     if (File.Exists(certPath))
     {
@@ -31,8 +33,35 @@ var app = builder.Build();
 app.MapGet("/", async (HttpContext context, IAmazonDynamoDB dynamoDBClient) =>
 {
     context.Response.Headers.ContentType = "text/html; charset=utf-8";
-    
+
     await Page.Print(context.Response.BodyWriter, "Eduardo. We're preparing for bd queries");
+});
+
+app.MapPost("/create_user", async (
+    deepdeepbimapi.Models.CreateUserRequest input,
+    IAmazonDynamoDB dynamoDBClient
+) =>
+{
+    string newUserId = Guid.NewGuid().ToString();
+    string newUserPasswordHash = BCrypt.Net.BCrypt.HashPassword(input.Password);
+
+    var request = new PutItemRequest
+    {
+        TableName = "deepdeepbim_users",
+        Item = new Dictionary<string, AttributeValue>
+        {
+            { "UserId", new AttributeValue { S = newUserId } },
+            { "FirstName", new AttributeValue { S = input.FirstName } },
+            { "LastName", new AttributeValue { S = input.LastName } },
+            { "PasswordHash", new AttributeValue { S = newUserPasswordHash } },
+            { "Email", new AttributeValue { S = input.Email } },
+            { "CreatedAt", new AttributeValue { S = DateTime.UtcNow.ToString("O") } }
+        }
+    };
+
+    await dynamoDBClient.PutItemAsync(request);
+
+    return Results.Created($"/users/{newUserId}", new { UserId = newUserId });
 });
 
 app.Run();
