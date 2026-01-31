@@ -41,7 +41,7 @@ app.MapGet("/", async (HttpContext context) =>
     
     // Simulate a massive report streaming
     await writer.WriteAsync("<ul>"u8.ToArray());
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 10000; i++)
     {
         // For dynamic numbers, we still need a tiny allocation, 
         // but the static HTML parts are free.
