@@ -1,6 +1,8 @@
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
+using deepdeepbimapi.Database;
 
 
 var builder = WebApplication.CreateSlimBuilder(args);
@@ -42,26 +44,22 @@ app.MapPost("/create_user", async (
     IAmazonDynamoDB dynamoDBClient
 ) =>
 {
-    if (string.IsNullOrEmpty(input.FirstName))
+    var requestErrors = new string[]
     {
-        return Results.InternalServerError(new { error = "Empty First Name." });
-    }
-    if (string.IsNullOrEmpty(input.LastName))
+        string.IsNullOrEmpty(input.FirstName) ? "First Name" : null,
+        string.IsNullOrEmpty(input.LastName) ? "Last Name" : null,
+        string.IsNullOrEmpty(input.Password) ? "Password" : null,
+        string.IsNullOrEmpty(input.Email) ? "Email" : null
+    };
+
+    if(requestErrors.Length > 0)
     {
-        return Results.InternalServerError(new { error = "Empty Last Name." });
-    }
-    if (string.IsNullOrEmpty(input.Password))
-    {
-        return Results.InternalServerError(new { error = "Empty Password." });
-    }
-    if (string.IsNullOrEmpty(input.Email))
-    {
-        return Results.InternalServerError(new { error = "Empty Email." });
+        return Results.BadRequest(new { error = $"Missing fields: {string.Join(", ",requestErrors)}" });
     }
 
     var emailCheckRequest = new QueryRequest
     {
-        TableName = "deepdeepbim_users",
+        TableName = DatabaseTables.UsersTable,
         IndexName = "Email-Index",
         KeyConditionExpression = "Email = :v_email",
         ExpressionAttributeValues = new Dictionary<string, AttributeValue>
@@ -84,7 +82,7 @@ app.MapPost("/create_user", async (
 
     var request = new PutItemRequest
     {
-        TableName = "deepdeepbim_users",
+        TableName = DatabaseTables.UsersTable,
         Item = new Dictionary<string, AttributeValue>
         {
             { "UserId", new AttributeValue { S = newUserId } },
