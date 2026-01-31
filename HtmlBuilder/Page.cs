@@ -13,7 +13,7 @@ public static class Page
             <script src="static/global.js"></script>
         </head>
         <body>
-        <h1>DeepDeepBIM</h1>
+        <h1>DeepDeepBIM</h1> 
         """u8;
 
     public static async Task Print(System.IO.Pipelines.PipeWriter writer)
