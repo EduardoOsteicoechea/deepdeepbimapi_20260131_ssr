@@ -49,79 +49,79 @@ app.MapGet("/", async (HttpContext context, IAmazonDynamoDB dynamoDBClient) =>
     await Page.Print(context.Response.BodyWriter, "Eduardo. We're preparing for bd queries");
 });
 
-app.MapPost("/create_user", async (
-    deepdeepbimapi.Models.CreateUserRequest input,
-    IAmazonDynamoDB dynamoDBClient
-) =>
-{
-    var requestErrors = new List<string>();
-    if (string.IsNullOrEmpty(input.FirstName))
-    {
-        requestErrors.Add("First Name");
-    }
-    if (string.IsNullOrEmpty(input.LastName))
-    {
-        requestErrors.Add("Last Name");
-    }
-    if (string.IsNullOrEmpty(input.Password))
-    {
-        requestErrors.Add("Password");
-    }
-    if (string.IsNullOrEmpty(input.Email))
-    {
-        requestErrors.Add("Email");
-    }
-    if (requestErrors.Any())
-    {
-        return Results.BadRequest(new { error = $"Missing fields: {string.Join(", ", requestErrors)}" });
-    }
+// app.MapPost("/create_user", async (
+//     deepdeepbimapi.Models.CreateUserRequest input,
+//     IAmazonDynamoDB dynamoDBClient
+// ) =>
+// {
+//     var requestErrors = new List<string>();
+//     if (string.IsNullOrEmpty(input.FirstName))
+//     {
+//         requestErrors.Add("First Name");
+//     }
+//     if (string.IsNullOrEmpty(input.LastName))
+//     {
+//         requestErrors.Add("Last Name");
+//     }
+//     if (string.IsNullOrEmpty(input.Password))
+//     {
+//         requestErrors.Add("Password");
+//     }
+//     if (string.IsNullOrEmpty(input.Email))
+//     {
+//         requestErrors.Add("Email");
+//     }
+//     if (requestErrors.Any())
+//     {
+//         return Results.BadRequest(new { error = $"Missing fields: {string.Join(", ", requestErrors)}" });
+//     }
 
-    var emailCheckRequest = new QueryRequest
-    {
-        TableName = DatabaseTables.UsersTable,
-        IndexName = "Email-Index",
-        KeyConditionExpression = "Email = :v_email",
-        ExpressionAttributeValues = new Dictionary<string, AttributeValue>
-        {
-            { ":v_email", new AttributeValue { S = input.Email } }
-        },
-        Limit = 1
-    };
+//     var emailCheckRequest = new QueryRequest
+//     {
+//         TableName = DatabaseTables.UsersTable,
+//         IndexName = "Email-Index",
+//         KeyConditionExpression = "Email = :v_email",
+//         ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+//         {
+//             { ":v_email", new AttributeValue { S = input.Email } }
+//         },
+//         Limit = 1
+//     };
 
-    var emailCheckResponse = await dynamoDBClient.QueryAsync(emailCheckRequest);
+//     var emailCheckResponse = await dynamoDBClient.QueryAsync(emailCheckRequest);
 
-    if (emailCheckResponse.Count > 0)
-    {
-        return Results.Conflict(new { error = "Already registered email." });
-    }
+//     if (emailCheckResponse.Count > 0)
+//     {
+//         return Results.Conflict(new { error = "Already registered email." });
+//     }
 
-    string newUserId = Guid.NewGuid().ToString();
-    string newUserPasswordHash = BCrypt.Net.BCrypt.HashPassword(input.Password);
+//     string newUserId = Guid.NewGuid().ToString();
+//     string newUserPasswordHash = BCrypt.Net.BCrypt.HashPassword(input.Password);
 
-    var request = new PutItemRequest
-    {
-        TableName = DatabaseTables.UsersTable,
-        Item = new Dictionary<string, AttributeValue>
-        {
-            { "UserId", new AttributeValue { S = newUserId } },
-            { "FirstName", new AttributeValue { S = input.FirstName } },
-            { "LastName", new AttributeValue { S = input.LastName } },
-            { "PasswordHash", new AttributeValue { S = newUserPasswordHash } },
-            { "Email", new AttributeValue { S = input.Email } },
-            { "CreatedAt", new AttributeValue { S = DateTime.UtcNow.ToString("O") } }
-        }
-    };
+//     var request = new PutItemRequest
+//     {
+//         TableName = DatabaseTables.UsersTable,
+//         Item = new Dictionary<string, AttributeValue>
+//         {
+//             { "UserId", new AttributeValue { S = newUserId } },
+//             { "FirstName", new AttributeValue { S = input.FirstName } },
+//             { "LastName", new AttributeValue { S = input.LastName } },
+//             { "PasswordHash", new AttributeValue { S = newUserPasswordHash } },
+//             { "Email", new AttributeValue { S = input.Email } },
+//             { "CreatedAt", new AttributeValue { S = DateTime.UtcNow.ToString("O") } }
+//         }
+//     };
 
-    await dynamoDBClient.PutItemAsync(request);
+//     await dynamoDBClient.PutItemAsync(request);
 
-    return Results.Created($"/users/{newUserId}", new { UserId = newUserId });
-});
+//     return Results.Created($"/users/{newUserId}", new { UserId = newUserId });
+// });
 
 app.MapPost("/login", async (
     HttpContext context,
     deepdeepbimapi.Models.LoginRequest input,
     IAmazonDynamoDB dynamoClient
-    ) =>
+) =>
 {
     if (context.Request.Cookies.ContainsKey("auth_token"))
     {
