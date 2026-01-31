@@ -42,6 +42,26 @@ app.MapPost("/create_user", async (
     IAmazonDynamoDB dynamoDBClient
 ) =>
 {
+    var emailCheckRequest = new QueryRequest
+    {
+        TableName = "deepdeepbim_users",
+        IndexName = "Email-Index",
+        KeyConditionExpression = "Email = :v_email",
+        ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+        {
+            { ":v_email", new AttributeValue { S = input.Email } }
+        },
+        Limit = 1
+    };
+
+    var emailCheckResponse = await dynamoDBClient.QueryAsync(emailCheckRequest);
+    
+    if (emailCheckResponse.Count > 0)
+    {
+        // 409 Conflict is the standard HTTP code for "Duplicate Resource"
+        return Results.Conflict(new { error = "This email is already registered." });
+    }
+
     string newUserId = Guid.NewGuid().ToString();
     string newUserPasswordHash = BCrypt.Net.BCrypt.HashPassword(input.Password);
 
@@ -63,5 +83,16 @@ app.MapPost("/create_user", async (
 
     return Results.Created($"/users/{newUserId}", new { UserId = newUserId });
 });
+
+
+
+
+
+
+
+
+
+
+
 
 app.Run();
