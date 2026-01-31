@@ -1,6 +1,9 @@
 using System.Security. Cryptography.X509Certificates;
+using Amazon.DynamoDBv2;
 
 var builder = WebApplication.CreateSlimBuilder(args);
+
+builder.Services.AddAWSService<IAmazonDynamoDB>();
 
 var certPath = "/etc/letsencrypt/live/deepdeepbim.com/fullchain.pem";
 var keyPath = "/etc/letsencrypt/live/deepdeepbim.com/privkey.pem";
@@ -25,11 +28,11 @@ builder.WebHost.ConfigureKestrel(options =>
 
 var app = builder.Build();
 
-app.MapGet("/", async (HttpContext context) =>
+app.MapGet("/", async (HttpContext context, IAmazonDynamoDB dynamoDBClient) =>
 {
     context.Response.Headers.ContentType = "text/html; charset=utf-8";
     
-    await Page.Print(context.Response.BodyWriter, "Eduardo");
+    await Page.Print(context.Response.BodyWriter, "Eduardo. We're preparing for bd queries");
 });
 
 app.Run();

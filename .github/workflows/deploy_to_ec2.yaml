@@ -44,7 +44,6 @@ jobs:
             
             # 3. Ensure the binary is executable
             chmod +x ./deepdeepbimapi
-            
-            # 4. Run the app in the background (using sudo for port 443)
-            # We use setsid or nohup to ensure the process survives the SSH session closing
-            sudo nohup ./deepdeepbimapi --urls "https://0.0.0.0:443" > output.log 2>&1 &
+
+            # 4. Restart the systemd service
+            sudo systemctl restart deepdeepbimapi

@@ -7,4 +7,9 @@
   <InvariantGlobalization>true</InvariantGlobalization>
 </PropertyGroup>
 
+ <ItemGroup>
+   <PackageReference Include="AWSSDK.DynamoDBv2" Version="4.0.13" />
+   <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.22" />
+ </ItemGroup>
+
 </Project>

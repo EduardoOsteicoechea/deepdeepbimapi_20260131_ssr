@@ -23,11 +23,14 @@ public static class Page
     {
         writer.Write(Head);
         writer.Write(GreetUserStart);
+
         int maxByteCount = System.Text.Encoding.UTF8.GetMaxByteCount(userName.Length);
         Span<byte> userNameBuffer = writer.GetSpan(maxByteCount);
         int actualAmountOfBytesRequired = System.Text.Encoding.UTF8.GetBytes(userName, userNameBuffer);
         writer.Advance(actualAmountOfBytesRequired);
+
         writer.Write(GreetUserEnd);
+
         await writer.CompleteAsync();
     }
 

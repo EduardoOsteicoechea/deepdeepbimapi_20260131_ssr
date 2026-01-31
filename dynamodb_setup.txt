@@ -1,0 +1,2 @@
+dotnet add package AWSSDK.DynamoDBv2
+dotnet add package AWSSDK.Extensions.NETCore.Setup
