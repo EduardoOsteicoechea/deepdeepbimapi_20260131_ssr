@@ -71,7 +71,7 @@ app.MapPost("/create_user", async (
     {
         requestErrors.Add("Email");
     }
-    if(requestErrors.Any())
+    if (requestErrors.Any())
     {
         return Results.BadRequest(new { error = $"Missing fields: {string.Join(", ", requestErrors)}" });
     }
@@ -89,7 +89,7 @@ app.MapPost("/create_user", async (
     };
 
     var emailCheckResponse = await dynamoDBClient.QueryAsync(emailCheckRequest);
-    
+
     if (emailCheckResponse.Count > 0)
     {
         return Results.Conflict(new { error = "Already registered email." });
@@ -118,8 +118,8 @@ app.MapPost("/create_user", async (
 });
 
 app.MapPost("/login", async (
-    HttpContext context, 
-    deepdeepbimapi.Models.LoginRequest input, 
+    HttpContext context,
+    deepdeepbimapi.Models.LoginRequest input,
     IAmazonDynamoDB dynamoClient
     ) =>
 {
@@ -145,7 +145,6 @@ app.MapPost("/login", async (
     };
 
     var queryResponse = await dynamoClient.QueryAsync(queryRequest);
-
     if (queryResponse.Count == 0)
     {
         return Results.Unauthorized();
@@ -156,9 +155,7 @@ app.MapPost("/login", async (
     string userId = userItem["UserId"].S;
     string firstName = userItem.ContainsKey("FirstName") ? userItem["FirstName"].S : "User";
 
-
     bool isPasswordValid = BCrypt.Net.BCrypt.Verify(input.Password, storedHash);
-
     if (!isPasswordValid) return Results.Unauthorized();
 
     string? jwtSecret = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
@@ -168,32 +165,35 @@ app.MapPost("/login", async (
     }
 
     var key = Encoding.UTF8.GetBytes(jwtSecret);
-    var tokenHandler = new JwtSecurityTokenHandler();    
+    var tokenHandler = new JwtSecurityTokenHandler();
     var tokenDescriptor = new SecurityTokenDescriptor
     {
-        Subject = new ClaimsIdentity(new[] 
-        { 
-            new Claim("sub", userId),        // Standard User ID claim
-            new Claim("given_name", firstName) // Optimization: Store name in token to avoid extra DB lookups
+        Subject = new ClaimsIdentity(new[]
+        {
+            new Claim("sub", userId),
+            new Claim("given_name", firstName)
         }),
         Expires = DateTime.UtcNow.AddHours(1),
         SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-    };    
+    };
     var token = tokenHandler.CreateToken(tokenDescriptor);
     var tokenString = tokenHandler.WriteToken(token);
 
-    // -------------------------------------------------------------
-    // 6. SET SECURE COOKIE
-    // -------------------------------------------------------------
     context.Response.Cookies.Append("auth_token", tokenString, new CookieOptions
     {
-        HttpOnly = true,   // JavaScript cannot steal this
-        Secure = true,     // Only sends over HTTPS
-        SameSite = SameSiteMode.Strict, // Prevents CSRF attacks
+        HttpOnly = true,
+        Secure = true,
+        SameSite = SameSiteMode.Strict,
         Expires = DateTime.UtcNow.AddHours(1)
     });
 
     return Results.Ok(new { message = "Logged in successfully", userId = userId });
+});
+
+app.MapPost("/logout", (HttpContext context) =>
+{
+    context.Response.Cookies.Delete("auth_token");
+    return Results.Ok(new { message = "Logged out successfully" });
 });
 
 
