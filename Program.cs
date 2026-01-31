@@ -44,13 +44,24 @@ app.MapPost("/create_user", async (
     IAmazonDynamoDB dynamoDBClient
 ) =>
 {
-    var requestErrors = new string[]
+    string[] requestErrors = Array.Empty<string>();
+
+    if (string.IsNullOrEmpty(input.FirstName))
     {
-        string.IsNullOrEmpty(input.FirstName) ? "First Name" : null,
-        string.IsNullOrEmpty(input.LastName) ? "Last Name" : null,
-        string.IsNullOrEmpty(input.Password) ? "Password" : null,
-        string.IsNullOrEmpty(input.Email) ? "Email" : null
-    };
+        requestErrors.Append("First Name");
+    }
+    if (string.IsNullOrEmpty(input.LastName))
+    {
+        requestErrors.Append("Last Name");
+    }
+    if (string.IsNullOrEmpty(input.Password))
+    {
+        requestErrors.Append("Password");
+    }
+    if (string.IsNullOrEmpty(input.Email))
+    {
+        requestErrors.Append("Email");
+    }
 
     if(requestErrors.Length > 0)
     {
