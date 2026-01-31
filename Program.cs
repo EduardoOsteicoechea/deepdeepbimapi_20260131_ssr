@@ -29,7 +29,7 @@ app.MapGet("/", async (HttpContext context) =>
 {
     context.Response.Headers.ContentType = "text/html; charset=utf-8";
     
-    await Page.Print(context.Response.BodyWriter);
+    await Page.Print(context.Response.BodyWriter, "Eduardo");
 });
 
 app.Run();

@@ -16,9 +16,18 @@ public static class Page
         <h1>DeepDeepBIM</h1> 
         """u8;
 
-    public static async Task Print(System.IO.Pipelines.PipeWriter writer)
+    private static ReadOnlySpan<byte> GreetUserStart => "<p>Hello, "u8;
+    private static ReadOnlySpan<byte> GreetUserEnd => "!</p>"u8;
+
+    public static async Task Print(System.IO.Pipelines.PipeWriter writer, string userName)
     {
         writer.Write(Head);
+        writer.Write(GreetUserStart);
+        int maxByteCount = System.Text.Encoding.UTF8.GetMaxByteCount(userName.Length);
+        Span<byte> userNameBuffer = writer.GetSpan(maxByteCount);
+        int actualAmountOfBytesRequired = System.Text.Encoding.UTF8.GetBytes(userName, userNameBuffer);
+        writer.Advance(actualAmountOfBytesRequired);
+        writer.Write(GreetUserEnd);
         await writer.CompleteAsync();
     }
 
